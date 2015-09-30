@@ -1,1 +1,0 @@
-web: python$PYTHON_VERSION pyapp.py
