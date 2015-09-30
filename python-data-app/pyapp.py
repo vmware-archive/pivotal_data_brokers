@@ -19,8 +19,11 @@ def index(name):
 @route('/test')
 def test():
 
+    output_txt = "<HTML>dbhost=" + dbhost + "<BR>" + "dbname=" + dbname + "<BR>" + "dbuser=" + dbuser + "<BR>" + "dbpassword=" + dbpassword + "<BR></HTML>"
+
+
     con = None
-    con = psycopg2.connect(user= dbuser, database= dbname,host = dbhost , password= dbpassword)
+    con = psycopg2.connect(user="gpadmin", database=dbname,host=dbhost , password="gpadmin")
     cur = con.cursor()
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur.execute('DROP TABLE IF EXISTS t1')
@@ -28,7 +31,9 @@ def test():
     cur.execute('INSERT into t1 VALUES (1),(2),(3)')
 
     sql = "DROP TABLE IF EXISTS test_data; " \
+    "DROP SCHEMA IF EXISTS myschema CASCADE; " \
     "CREATE TABLE test_data (trans_id INT, product TEXT); " \
+    "CREATE SCHEMA myschema; " \
     "INSERT INTO test_data VALUES (1, 'beer'); " \
     "INSERT INTO test_data VALUES (1, 'diapers'); " \
     "INSERT INTO test_data VALUES (1, 'chips'); " \
@@ -45,9 +50,15 @@ def test():
     "INSERT INTO test_data VALUES (7, 'beer'); " \
     "INSERT INTO test_data VALUES (7, 'diapers'); " \
 
+    output_txt = output_txt + sql
+
     cur.execute(sql)
 
-    return dbuser
+    sql = "SELECT * FROM madlib.assoc_rules( .25, .5,'trans_id','product','test_data','myschema',TRUE);"
+    cur.execute(sql)
+
+
+    return output_txt
 
 @route('/t1')
 def t1():
