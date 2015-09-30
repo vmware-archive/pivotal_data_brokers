@@ -201,14 +201,15 @@ def bind(instance_id, binding_id):
     # create the userid/password
     dbname = "\"" + str(instance_id).replace("-","") + "\""
     #user = str(''.join(random.choice(string.ascii_lowercase) for _ in range(8)))
-    user = "\"" + str(binding_id).replace("-","") + "\""
-    password = "'password'"
+    #dbuser = "dbuser"
+    dbuser = "p" + str(binding_id).replace("-","")[:7]
+    password = "dbpassword"
     con = None
     con = psycopg2.connect(user= su_username, host = dbhost , password= su_password)
     cur = con.cursor()
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur.execute('CREATE USER ' + user + ' WITH password ' + password )
-    cur.execute('GRANT ALL PRIVILEGES ON DATABASE ' + dbname + ' to ' + user)
+    cur.execute('CREATE USER ' + dbuser + ' WITH password ' +  '\'' + password + '\''  )
+    cur.execute('GRANT ALL PRIVILEGES ON DATABASE ' + dbname + ' to ' + dbuser)
     cur.close()
 
 
@@ -222,7 +223,7 @@ def bind(instance_id, binding_id):
     if binding_result.status_code == 200:
         # return created status code
         bottle.response.status = 201
-        return {"credentials": {"uri": bottle.template(service_binding, instance_id=instance_id, binding_id=binding_id),"dbhost":dbhost,"dbuser":str(binding_id).replace("-",""),"dbpassword":password, "dbname":str(instance_id).replace("-","")}}
+        return {"credentials": {"uri": bottle.template(service_binding, instance_id=instance_id, binding_id=binding_id),"dbhost":dbhost,"dbuser":dbuser,"dbpassword":password, "dbname":str(instance_id).replace("-","")}}
 
 @bottle.route('/v2/service_instances/<instance_id>/service_bindings/<binding_id>', method='DELETE')
 @bottle.auth_basic(authenticate)
@@ -242,13 +243,14 @@ def unbind(instance_id, binding_id):
         is expected
     """
     dbname = "\"" + str(instance_id).replace("-","") + "\""  
-    user = str(binding_id).replace("-","")
+    user = "p" + str(binding_id).replace("-","")[:7]
+    #user = "user"
     con = None
     con = psycopg2.connect(user= su_username, host = dbhost , password= su_password)
     cur = con.cursor()
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     try:
-     cur.execute('DENY ALL PRIVILEGES ON DATABASE ' + dbname + ' to ' + user)
+     cur.execute('REVOKE ALL PRIVILEGES ON DATABASE ' + dbname + ' from ' + user)
      cur.execute('DROP USER ' + user )
     except Exception: 
      pass
