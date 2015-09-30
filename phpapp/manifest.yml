@@ -1,0 +1,3 @@
+applications:
+- name: echo-php
+  framework: php
