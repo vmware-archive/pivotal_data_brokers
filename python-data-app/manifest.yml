@@ -1,0 +1,4 @@
+applications:
+- name: pyapp
+  mem: 64M
+  disk: 512M
