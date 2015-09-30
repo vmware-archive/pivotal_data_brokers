@@ -1,0 +1,4 @@
+applications:
+- name: echo-service
+  mem: 64M
+  disk: 512M
